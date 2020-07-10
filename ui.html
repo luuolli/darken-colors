@@ -1,0 +1,259 @@
+<!-- <h2>Rectangle Creator</h2>
+<p>Count: <input id="count" value="5" /></p>
+<button id="create">Create</button>
+<button id="cancel">Cancel</button> -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <style>
+    :root {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+
+    * {
+      padding: 0;
+      margin: 0;
+      border: none;
+      outline: none;
+    }
+    body {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .header {
+      width: 100%;
+      flex-grow: 1;
+    }
+
+    .container-colors {
+      cursor: pointer;
+      margin: 0 auto;
+      overflow-y: auto;
+
+      padding: 0 1em;
+      padding-top: 40px;
+
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-content: flex-start;
+      position: relative;
+      height: 100%;
+
+      scrollbar-width: thin;
+    }
+    @supports (scrollbar-width: thin) {
+      .no-support {
+        display: none;
+      }
+    }
+    p {
+      padding-left: 1em;
+      margin-bottom: 10px;
+      font-weight: 500;
+    }
+
+    input[type='text'] {
+      color: #545454;
+      padding: 1em 2em;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+    }
+
+    .actions {
+      padding: 0 1em;
+      display: flex;
+      justify-content: stretch;
+    }
+
+    input[type='button'] {
+      border-radius: 0.3em;
+      width: 100%;
+      cursor: pointer;
+      padding: 0.6em 2em;
+      margin: 0 2px;
+      font-weight: 800;
+    }
+
+    input[type='button']:hover {
+      opacity: 0.9;
+      box-shadow: 0px 4px 30px rgba(52, 52, 52, 0.2);
+    }
+
+    .light-button {
+      background: #cccccc;
+      color: #212121;
+    }
+
+    .dark-button {
+      background: #212121;
+      color: #ffffff;
+    }
+
+    /* box colors */
+    .box {
+      padding: 1.2em 2.5em;
+      width: 80%;
+      height: 20px;
+      transition: 0.3s;
+      text-align: center;
+      line-height: 1em;
+      font-weight: 500;
+    }
+
+    .box:hover {
+      box-shadow: 0px 4px 30px rgba(52, 52, 52, 0.2);
+    }
+  </style>
+  <body>
+    <div class="header">
+      <p>Hex: <input id="input-color" type="text" placeholder="#343434" /></p>
+      <div class="actions">
+        <!-- <input class="light-button" type="button" value="Ligthen" /> -->
+        <input
+          id="darken-generate"
+          class="dark-button"
+          type="button"
+          value="Darken"
+        />
+      </div>
+    </div>
+    <div class="container-colors"></div>
+  </body>
+</html>
+<script>
+  let container = document.querySelector('.container-colors')
+
+  function hexToDecimal(hex) {
+    return parseInt(hex.replace('#', ''), 16)
+  }
+
+  function decimalToHexColor(decimal) {
+    return decimal.toString(16).toUpperCase().padStart(6, '0').padStart(7, '#')
+  }
+
+  function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : null
+  }
+
+  function getDarkenessHex(color, coeficiente = '#0A0A0A') {
+    let result = hexToDecimal(color) - hexToDecimal(coeficiente)
+    return decimalToHexColor(result)
+  }
+
+  function getLightnessHex(color, coeficiente = '#0A0A0A') {
+    let result = hexToDecimal(color) + hexToDecimal(coeficiente)
+    return decimalToHexColor(result)
+  }
+
+  function putColorToContainer(hex) {
+    let rgb = hexToRgb(hex)
+    let textColor = rgb.r + rgb.g + rgb.b < 500 ? 'white' : '#212121'
+    let box = document.createElement('div')
+    box.onclick = copyColor
+    box.className = 'box'
+    box.style = `background: ${hex}; color: ${textColor}`
+    box.innerHTML = hex
+    container.appendChild(box)
+  }
+
+  function canDarkeness(color, coeficiente = '#0A0A0A') {
+    let colorRGB = hexToRgb(color)
+    let coefRGB = hexToRgb(coeficiente)
+    if (
+      colorRGB.r - coefRGB.r < 0 ||
+      colorRGB.g - coefRGB.g < 0 ||
+      colorRGB.b - coefRGB.b < 0
+    ) {
+      return false
+    }
+
+    return true
+  }
+
+  function canLightness(color, coeficiente = '#0A0A0A') {
+    let colorRGB = hexToRgb(color)
+    let coefRGB = hexToRgb(coeficiente)
+    if (
+      colorRGB.r + coefRGB.r > 255 ||
+      colorRGB.g + coefRGB.g > 255 ||
+      colorRGB.b + coefRGB.b > 255
+    ) {
+      return false
+    }
+
+    return true
+  }
+
+  function generateDarkenColors(lightColor, qtd = 20) {
+    let color = lightColor
+    putColorToContainer(color)
+    for (qtd; qtd > 0; qtd--) {
+      color = getDarkenessHex(color)
+      console.log(color)
+      if (!canDarkeness(color)) {
+        putColorToContainer(color)
+        break
+      } else {
+        putColorToContainer(color)
+      }
+    }
+  }
+
+  function generateDarken() {
+    document.querySelectorAll('.box').forEach((item) => {
+      item.remove()
+    })
+    let color = document
+      .querySelector('#input-color')
+      .value.padStart(7, '#')
+      .toUpperCase()
+    let qtd = 10
+    // let qtd = parseInt(document.querySelector('#input-qtd').value)
+
+    generateDarkenColors(color, qtd)
+  }
+  function copyColor() {
+    let color = this.innerHTML
+    const el = document.createElement('textarea')
+    el.value = color.replace('#', '').toUpperCase()
+    el.setAttribute('readonly', '')
+    el.style.position = 'absolute'
+    el.style.left = '-9999px'
+    document.body.appendChild(el)
+    el.select()
+    document.execCommand('copy')
+    document.body.removeChild(el)
+  }
+  document.getElementById('darken-generate').onclick = () => {
+    generateDarken()
+  }
+  // document.getElementById('create').onclick = () => {
+  //   const textbox = document.getElementById('count')
+  //   const count = parseInt(textbox.value, 10)
+  //   parent.postMessage(
+  //     { pluginMessage: { type: 'create-rectangles', count } },
+  //     '*'
+  //   )
+  // }
+
+  // document.getElementById('cancel').onclick = () => {
+  //   parent.postMessage({ pluginMessage: { type: 'cancel' } }, '*')
+  // }
+</script>

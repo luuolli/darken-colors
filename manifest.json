@@ -1,0 +1,7 @@
+{
+  "name": "Darken color pallete",
+  "id": "860537667489348101",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html"
+}
